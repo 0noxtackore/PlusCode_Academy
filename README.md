@@ -23,20 +23,14 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 
 See [Vite Configuration Reference](https://vite.dev/config/).
 
-## Project Setup
+## Instalar dependencias
 
-```sh
-npm install
-```
+Windows: Ejecuta install-deps.bat
 
-### Compile and Hot-Reload for Development
+Linux/Mac: Ejecuta install-deps.sh (asegúrate de darle permisos con chmod +x install-deps.sh)
 
-```sh
-npm run dev
-```
+## Iniciar el servidor de desarrollo
 
-### Type-Check, Compile and Minify for Production
+Windows: Ejecuta start-dev.bat
 
-```sh
-npm run build
-```
+Linux/Mac: Ejecuta start-dev.sh
