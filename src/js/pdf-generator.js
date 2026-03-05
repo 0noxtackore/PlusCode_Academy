@@ -321,7 +321,7 @@ export function generateTeacherPaymentReceipt(teacherPaymentId) {
           <div class="receipt">
             <div class="header-cell">
               <div class="center">
-                <img class="logo" src="/assets/uploads/pluscode-logo.png" alt="Logo" onerror="this.style.display='none'" />
+                <img class="logo" src="/assets/uploads/pluscodeprint.png" alt="Logo" onerror="this.style.display='none'" />
                 <div class="bold title">COMPROBANTE DE NÓMINA</div>
                 <div class="muted small">Academia +code</div>
                 <div class="stamp xs bold">${escapeHtml(controlNumber)}</div>

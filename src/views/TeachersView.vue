@@ -86,18 +86,18 @@
         </div>
       </div>
       
-      <div class="table-wrapper">
+      <div class="table-wrapper table-wrapper-scroll-y">
         <table class="table-professional table-teachers-compact">
           <thead>
             <tr>
-              <th width="20%">Identificación</th>
-              <th width="25%">Nombre Completo</th>
-              <th width="15%">Especialidad Académica</th>
+              <th width="14%">Identificación</th>
+              <th width="20%">Nombre Completo</th>
+              <th width="16%">Especialidad Académica</th>
               <th width="10%">Tarifa por Hora</th>
-              <th width="10%" class="text-center">Horas/Sem</th>
-              <th width="10%">Estado</th>
-              <th width="10%">Fecha de Contratación</th>
-              <th width="10%" class="text-center" v-if="hasPermission('teachers')">Operaciones</th>
+              <th width="8%" class="text-center">Horas/Sem</th>
+              <th width="8%">Estado</th>
+              <th width="12%">Fecha de Contratación</th>
+              <th width="12%" class="text-center" v-if="hasPermission('teachers')">Operaciones</th>
             </tr>
           </thead>
           <tbody>
@@ -128,7 +128,7 @@
               </td>
             </tr>
             <tr v-if="filteredTeachers.length === 0">
-              <td colspan="8" class="text-center py-5 text-muted">
+              <td :colspan="hasPermission('teachers') ? 8 : 7" class="text-center py-5 text-muted">
                 <i class="fa fa-user-slash fa-2x mb-3 d-block"></i>
                 No se encontraron miembros del personal docente.
               </td>
@@ -230,57 +230,6 @@
       :title="`Historial de nómina - ${selectedTeacher?.name || ''} ${selectedTeacher?.lastName || ''}`"
       :show-default-footer="false"
     >
-      <div class="mb-3" v-if="hasPermission('teachers')">
-        <div class="form-row" style="margin-bottom: 0.75rem;">
-          <div class="form-group">
-            <label class="form-label">Período (YYYY-MM) *</label>
-            <div class="input-wrapper">
-              <i class="fa fa-calendar-alt input-icon"></i>
-              <input type="month" class="form-control" v-model="payrollForm.period" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Horas trabajadas (mes) *</label>
-            <div class="input-wrapper">
-              <i class="fa fa-clock input-icon"></i>
-              <input type="number" class="form-control" v-model="payrollForm.hoursWorked" required min="1" step="1">
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row" style="margin-bottom: 0.75rem;">
-          <div class="form-group">
-            <label class="form-label">Bonos (USD)</label>
-            <div class="input-wrapper">
-              <i class="fa fa-plus-circle input-icon"></i>
-              <input type="number" class="form-control" v-model="payrollForm.bonuses" min="0" step="0.01">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Deducciones (USD)</label>
-            <div class="input-wrapper">
-              <i class="fa fa-minus-circle input-icon"></i>
-              <input type="number" class="form-control" v-model="payrollForm.deductions" min="0" step="0.01">
-            </div>
-          </div>
-        </div>
-
-        <div class="form-row" style="margin-bottom: 0.75rem;">
-          <div class="form-group">
-            <label class="form-label">Referencia</label>
-            <div class="input-wrapper">
-              <i class="fa fa-hashtag input-icon"></i>
-              <input type="text" class="form-control" v-model="payrollForm.reference" placeholder="Ej: SAL-0003">
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-primary-modern" type="button" @click="recordPayroll()">
-          <i class="fa fa-save"></i>
-          <span>Registrar pago de nómina</span>
-        </button>
-      </div>
-
       <div class="table-wrapper">
         <table class="table-professional">
           <thead>
@@ -326,7 +275,76 @@
 
       <template #footer>
         <button type="button" class="btn-secondary-modern" @click="closePayrollModal()">Cerrar</button>
+        <button
+          v-if="hasPermission('teachers')"
+          type="button"
+          class="btn-primary-modern"
+          @click="openPayrollFormModal()"
+          :disabled="!selectedTeacher"
+        >
+          <i class="fa fa-plus" style="margin-right: 8px;"></i>
+          Registrar nómina
+        </button>
       </template>
+    </Modal>
+
+    <Modal
+      v-model="showPayrollFormModal"
+      :title="`Registrar nómina - ${selectedTeacher?.name || ''} ${selectedTeacher?.lastName || ''}`"
+      @confirm="recordPayroll"
+    >
+      <div class="student-form" v-if="selectedTeacher">
+        <div class="form-section" style="margin-bottom: 0;">
+          <div class="section-header" style="margin-bottom: 0.75rem;">
+            <i class="fa fa-money-check-alt"></i>
+            <h5>Nuevo pago de nómina</h5>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Período (YYYY-MM) *</label>
+              <div class="input-wrapper">
+                <i class="fa fa-calendar-alt input-icon"></i>
+                <input type="month" class="form-control" v-model="payrollForm.period" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Horas trabajadas (mes) *</label>
+              <div class="input-wrapper">
+                <i class="fa fa-clock input-icon"></i>
+                <input type="number" class="form-control" v-model="payrollForm.hoursWorked" required min="1" step="1">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Bonos (USD)</label>
+              <div class="input-wrapper">
+                <i class="fa fa-plus-circle input-icon"></i>
+                <input type="number" class="form-control" v-model="payrollForm.bonuses" min="0" step="0.01">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Deducciones (USD)</label>
+              <div class="input-wrapper">
+                <i class="fa fa-minus-circle input-icon"></i>
+                <input type="number" class="form-control" v-model="payrollForm.deductions" min="0" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 0;">
+            <div class="form-group">
+              <label class="form-label">Referencia</label>
+              <div class="input-wrapper">
+                <i class="fa fa-hashtag input-icon"></i>
+                <input type="text" class="form-control" v-model="payrollForm.reference" placeholder="Ej: SAL-0003">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Modal>
 
     <Modal v-model="showDeleteModal" title="Confirmar eliminación" :showDefaultFooter="false">
@@ -374,6 +392,7 @@ const formRef = ref(null)
 
 const userName = ref('')
 const showPayrollModal = ref(false)
+const showPayrollFormModal = ref(false)
 const selectedTeacher = ref(null)
 const teacherPayments = ref([])
 const searchQuery = ref('')
@@ -520,6 +539,18 @@ const confirmDeleteTeacher = () => {
 const viewPayroll = (teacherId) => {
   selectedTeacher.value = teachers.value.find(t => t.id === teacherId)
   teacherPayments.value = getTeacherPaymentHistory(teacherId)
+  showPayrollModal.value = true
+}
+
+const closePayrollModal = () => {
+  showPayrollModal.value = false
+  showPayrollFormModal.value = false
+  selectedTeacher.value = null
+  teacherPayments.value = []
+}
+
+const openPayrollFormModal = () => {
+  if (!selectedTeacher.value) return
   payrollForm.value = {
     period: new Date().toISOString().slice(0, 7),
     hoursWorked: Number(selectedTeacher.value?.weeklyHours || 0) * 4 || 40,
@@ -527,13 +558,7 @@ const viewPayroll = (teacherId) => {
     deductions: 0,
     reference: ''
   }
-  showPayrollModal.value = true
-}
-
-const closePayrollModal = () => {
-  showPayrollModal.value = false
-  selectedTeacher.value = null
-  teacherPayments.value = []
+  showPayrollFormModal.value = true
 }
 
 const recordPayroll = () => {
@@ -555,6 +580,7 @@ const recordPayroll = () => {
 
     showToast('Pago de nómina registrado correctamente', 'success')
     teacherPayments.value = getTeacherPaymentHistory(selectedTeacher.value.id)
+    showPayrollFormModal.value = false
   } catch (error) {
     showToast(error?.message || 'Error al registrar nómina', 'error')
   }

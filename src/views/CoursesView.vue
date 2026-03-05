@@ -125,14 +125,14 @@
               <label class="form-label">Código del Curso *</label>
               <div class="input-wrapper">
                 <i class="fa fa-hashtag input-icon"></i>
-                <input type="text" class="form-control" v-model="formData.code" required placeholder="Ej: MAT101">
+                <input type="text" class="form-control" v-model="formData.code" required placeholder="Ej: DIS202">
               </div>
             </div>
             <div class="form-group">
               <label class="form-label">Nombre del Curso *</label>
               <div class="input-wrapper">
                 <i class="fa fa-book-open input-icon"></i>
-                <input type="text" class="form-control" v-model="formData.name" required placeholder="Ej: Matemáticas Básicas">
+                <input type="text" class="form-control" v-model="formData.name" required placeholder="Ej: Diseño Gráfico">
               </div>
             </div>
           </div>
