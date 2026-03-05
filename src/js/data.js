@@ -47,29 +47,29 @@ const buildInitialStudents = () => ([
 
 const buildInitialCourses = () => ([
   // Programación e IA
-  { id: 1, code: 'IA-101', name: 'Ingeniería de Prompts', credits: 3, fee: 180.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
-  { id: 2, code: 'SEC-201', name: 'DevSecOps', credits: 4, fee: 260.00, status: 'Active', maxCapacity: 25, currentEnrollment: 0 },
-  { id: 3, code: 'LC-110', name: 'Low-Code', credits: 2, fee: 140.00, status: 'Active', maxCapacity: 35, currentEnrollment: 0 },
+  { id: 1, code: 'IA-101', name: 'Ingeniería de Prompts', credits: 200, fee: 180.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
+  { id: 2, code: 'SEC-201', name: 'DevSecOps', credits: 300, fee: 260.00, status: 'Active', maxCapacity: 25, currentEnrollment: 0 },
+  { id: 3, code: 'LC-110', name: 'Low-Code', credits: 100, fee: 140.00, status: 'Active', maxCapacity: 35, currentEnrollment: 0 },
 
   // Excel y Datos
-  { id: 4, code: 'DATA-120', name: 'Power Query/DAX', credits: 3, fee: 160.00, status: 'Active', maxCapacity: 28, currentEnrollment: 0 },
-  { id: 5, code: 'PY-130', name: 'Automatización con Python', credits: 4, fee: 220.00, status: 'Active', maxCapacity: 24, currentEnrollment: 0 },
-  { id: 6, code: 'BI-140', name: 'Business Intelligence', credits: 3, fee: 200.00, status: 'Active', maxCapacity: 26, currentEnrollment: 0 },
+  { id: 4, code: 'DATA-120', name: 'Power Query/DAX', credits: 200, fee: 160.00, status: 'Active', maxCapacity: 28, currentEnrollment: 0 },
+  { id: 5, code: 'PY-130', name: 'Automatización con Python', credits: 300, fee: 220.00, status: 'Active', maxCapacity: 24, currentEnrollment: 0 },
+  { id: 6, code: 'BI-140', name: 'Business Intelligence', credits: 100, fee: 200.00, status: 'Active', maxCapacity: 26, currentEnrollment: 0 },
 
   // Robótica e IoT
-  { id: 7, code: 'IOT-210', name: 'Drones Industriales', credits: 4, fee: 320.00, status: 'Active', maxCapacity: 18, currentEnrollment: 0 },
-  { id: 8, code: 'IOT-220', name: 'Domótica con Raspberry Pi', credits: 4, fee: 290.00, status: 'Active', maxCapacity: 20, currentEnrollment: 0 },
-  { id: 9, code: 'ROB-230', name: 'Mantenimiento Robótico', credits: 3, fee: 300.00, status: 'Active', maxCapacity: 18, currentEnrollment: 0 },
+  { id: 7, code: 'IOT-210', name: 'Drones Industriales', credits: 300, fee: 320.00, status: 'Active', maxCapacity: 18, currentEnrollment: 0 },
+  { id: 8, code: 'IOT-220', name: 'Domótica con Raspberry Pi', credits: 200, fee: 290.00, status: 'Active', maxCapacity: 20, currentEnrollment: 0 },
+  { id: 9, code: 'ROB-230', name: 'Mantenimiento Robótico', credits: 100, fee: 300.00, status: 'Active', maxCapacity: 18, currentEnrollment: 0 },
 
   // Diseño y UX
-  { id: 10, code: 'UX-310', name: 'Interfaces AR', credits: 3, fee: 240.00, status: 'Active', maxCapacity: 22, currentEnrollment: 0 },
-  { id: 11, code: 'UX-320', name: 'Branding con IA', credits: 2, fee: 210.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
-  { id: 12, code: 'UX-330', name: 'Motion Graphics', credits: 3, fee: 230.00, status: 'Active', maxCapacity: 24, currentEnrollment: 0 },
+  { id: 10, code: 'UX-310', name: 'Interfaces AR', credits: 200, fee: 240.00, status: 'Active', maxCapacity: 22, currentEnrollment: 0 },
+  { id: 11, code: 'UX-320', name: 'Branding con IA', credits: 100, fee: 210.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
+  { id: 12, code: 'UX-330', name: 'Motion Graphics', credits: 300, fee: 230.00, status: 'Active', maxCapacity: 24, currentEnrollment: 0 },
 
   // Marketing
-  { id: 13, code: 'MKT-410', name: 'Growth Hacking', credits: 3, fee: 200.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
-  { id: 14, code: 'MKT-420', name: 'AdTech', credits: 3, fee: 210.00, status: 'Active', maxCapacity: 26, currentEnrollment: 0 },
-  { id: 15, code: 'CRM-430', name: 'Automatización CRM', credits: 3, fee: 190.00, status: 'Active', maxCapacity: 28, currentEnrollment: 0 }
+  { id: 13, code: 'MKT-410', name: 'Growth Hacking', credits: 200, fee: 200.00, status: 'Active', maxCapacity: 30, currentEnrollment: 0 },
+  { id: 14, code: 'MKT-420', name: 'AdTech', credits: 100, fee: 210.00, status: 'Active', maxCapacity: 26, currentEnrollment: 0 },
+  { id: 15, code: 'CRM-430', name: 'Automatización CRM', credits: 300, fee: 190.00, status: 'Active', maxCapacity: 28, currentEnrollment: 0 }
 ])
 
 const buildInitialEnrollments = () => ([

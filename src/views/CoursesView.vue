@@ -142,7 +142,7 @@
               <label class="form-label">Créditos *</label>
               <div class="input-wrapper">
                 <i class="fa fa-layer-group input-icon"></i>
-                <input type="number" class="form-control" v-model="formData.credits" required min="1" max="6">
+                <input type="number" class="form-control" v-model="formData.credits" required min="0" max="300">
               </div>
             </div>
             <div class="form-group">
@@ -223,7 +223,7 @@ const formData = ref({
   id: null,
   code: '',
   name: '',
-  credits: 3,
+  credits: '',
   fee: 0,
   status: 'Active'
 })
@@ -245,18 +245,17 @@ const formatMoneyFull = (val) => {
   return Number(val).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-const CREDITS_MAX = 4
-
 const formatCredits = (val) => {
   const n = Number(val)
   const credits = Number.isFinite(n) ? n : 0
-  return `${credits}/${CREDITS_MAX}`
+  if (credits <= 0) return 'Agotado'
+  return `${credits}`
 }
 
 const creditsStatusClass = (val) => {
   const n = Number(val)
   const credits = Number.isFinite(n) ? n : 0
-  return credits >= CREDITS_MAX ? 'text-danger font-bold' : 'text-success font-bold'
+  return credits <= 0 ? 'text-danger font-bold' : 'text-success font-bold'
 }
 
 const formatMoneyDual = (usdVal) => {
@@ -294,7 +293,7 @@ const openModal = (course = null) => {
     formData.value = { ...course }
   } else {
     modalTitle.value = 'Crear Nuevo Curso'
-    formData.value = { id: null, code: '', name: '', credits: 3, fee: '', status: 'Active' }
+    formData.value = { id: null, code: '', name: '', credits: '', fee: '', status: 'Active' }
   }
   isModalOpen.value = true
 }
