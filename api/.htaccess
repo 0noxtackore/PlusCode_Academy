@@ -1,0 +1,74 @@
+# PlusCode Academy API - Apache Rewrite Rules
+# Place this file in the /api/ directory
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Set base directory (adjust if API is not in /api/)
+RewriteBase /api/
+
+# Allow direct access to existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# CORS Headers (enable for cross-origin requests)
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
+
+# Handle OPTIONS method for CORS preflight
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+
+# API Routing
+# Pattern: /api/endpoint/path?id=123
+
+# Auth endpoints
+RewriteRule ^auth/?$ endpoints/auth.php [L]
+RewriteRule ^auth/(.+)/?$ endpoints/auth.php?path=$1 [L]
+
+# Students endpoints
+RewriteRule ^students/?$ endpoints/students.php [L]
+RewriteRule ^students/(\d+)/?$ endpoints/students.php?id=$1 [L]
+
+# Courses endpoints
+RewriteRule ^courses/?$ endpoints/courses.php [L]
+RewriteRule ^courses/(\d+)/?$ endpoints/courses.php?id=$1 [L]
+
+# Enrollments endpoints
+RewriteRule ^enrollments/?$ endpoints/enrollments.php [L]
+RewriteRule ^enrollments/(\d+)/?$ endpoints/enrollments.php?id=$1 [L]
+
+# Payments endpoints
+RewriteRule ^payments/?$ endpoints/payments.php [L]
+RewriteRule ^payments/summary/?$ endpoints/payments.php?path=summary [L]
+RewriteRule ^payments/(\d+)/?$ endpoints/payments.php?id=$1 [L]
+
+# Teachers endpoints
+RewriteRule ^teachers/?$ endpoints/teachers.php [L]
+RewriteRule ^teachers/(\d+)/?$ endpoints/teachers.php?id=$1 [L]
+
+# Expenses endpoints
+RewriteRule ^expenses/?$ endpoints/expenses.php [L]
+RewriteRule ^expenses/categories/?$ endpoints/expenses.php?path=categories [L]
+RewriteRule ^expenses/summary/?$ endpoints/expenses.php?path=summary [L]
+RewriteRule ^expenses/(\d+)/?$ endpoints/expenses.php?id=$1 [L]
+
+# Dashboard endpoints
+RewriteRule ^dashboard/?$ endpoints/dashboard.php [L]
+RewriteRule ^dashboard/(.+)/?$ endpoints/dashboard.php?path=$1 [L]
+
+# Reports endpoints
+RewriteRule ^reports/financial/?$ endpoints/dashboard.php?path=financial [L]
+
+# Default: Route to index if no match
+RewriteRule ^(.*)$ index.php?endpoint=$1 [QSA,L]
+
+# PHP settings
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 300
