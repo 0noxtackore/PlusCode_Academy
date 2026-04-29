@@ -1,15 +1,15 @@
-## Usuarios del sistema (RBAC)
+# System Users (RBAC)
 
-Estas credenciales están hardcodeadas en [src/js/auth.js](cci:7://file:///c:/Users/PC/Documents/PROGRAMATION/PHP/Academy-Salle/src/js/auth.js:0:0-0:0).
+These credentials are hardcoded in `src/js/auth.js`.
 
-### Administrador
+## Administrator
 
-- **Usuario:** `admin`
-- **Contraseña:** `admin123`
-- **Nombre:** Administrator
-- **Correo:** `admin@pluscode.edu`
-- **Rol:** `admin`
-- **Permisos:**
+- **Username:** `admin`
+- **Password:** `admin123`
+- **Name:** Administrator
+- **Email:** `admin@pluscode.edu`
+- **Role:** `admin`
+- **Permissions:**
   - `students`
   - `courses`
   - `enrollments`
@@ -19,38 +19,38 @@ Estas credenciales están hardcodeadas en [src/js/auth.js](cci:7://file:///c:/Us
   - `teachers`
   - `inventory`
 
-### Recepción
+## Reception
 
-- **Usuario:** `recepcion`
-- **Contraseña:** `rec123`
-- **Nombre:** María Recepción
-- **Correo:** `maria.recepcion@pluscode.edu`
-- **Rol:** `receptionist`
-- **Permisos:**
+- **Username:** `recepcion`
+- **Password:** `rec123`
+- **Name:** Maria Reception
+- **Email:** `maria.recepcion@pluscode.edu`
+- **Role:** `receptionist`
+- **Permissions:**
   - `students`
   - `courses`
   - `enrollments`
   - `payments`
 
-### Caja / Facturación
+## Cashier / Billing
 
-- **Usuario:** `caja`
-- **Contraseña:** `caja123`
-- **Nombre:** Carlos Caja
-- **Correo:** `carlos.caja@pluscode.edu`
-- **Rol:** `cashier`
-- **Permisos:**
+- **Username:** `caja`
+- **Password:** `caja123`
+- **Name:** Carlos Cashier
+- **Email:** `carlos.caja@pluscode.edu`
+- **Role:** `cashier`
+- **Permissions:**
   - `payments`
   - `reports`
 
-### Control de Estudios
+## Academic Control
 
-- **Usuario:** `control`
-- **Contraseña:** `ctrl123`
-- **Nombre:** Ana Control
-- **Correo:** `ana.control@pluscode.edu`
-- **Rol:** `academic_control`
-- **Permisos:**
+- **Username:** `control`
+- **Password:** `ctrl123`
+- **Name:** Ana Control
+- **Email:** `ana.control@pluscode.edu`
+- **Role:** `academic_control`
+- **Permissions:**
   - `students`
   - `courses`
   - `enrollments`

@@ -812,9 +812,9 @@ const buildSamplePayments = () => {
   ]
 }
 
-const loadData = () => {
+const loadData = async () => {
   try {
-    const data = getPaymentsWithDetails()
+    const data = await getPaymentsWithDetails()
     if (Array.isArray(data) && data.length > 0) {
       payments.value = data
     } else {
@@ -825,19 +825,20 @@ const loadData = () => {
   }
 
   try {
-    initializePaymentPlans()
+    await initializePaymentPlans()
   } catch {
     // noop
   }
 
-  const courses = getCourses().filter(c => c.status === 'Active')
+  const allCourses = await getCourses()
+  const courses = allCourses.filter(c => c.status === 'Active')
   activeCourses.value = courses
 
-  const enrollments = getEnrollments()
+  const enrollments = await getEnrollments()
   const enrollmentToCourse = new Map(enrollments.map(e => [e.id, e.courseId]))
   const courseMap = new Map(courses.map(c => [c.id, c]))
 
-  const base = getDebtorsReport()
+  const base = await getDebtorsReport()
   debtorsRows.value = (base || []).map(row => {
     const courseId = enrollmentToCourse.get(row.enrollmentId)
     const course = courseMap.get(courseId) || {}
@@ -915,9 +916,9 @@ const formatMoneyFull = (val) => {
   return Number(val).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
-  loadData()
+  await loadData()
   scheduleRenderPaymentAnalytics(0)
   scheduleRenderPaymentAnalytics(250)
 

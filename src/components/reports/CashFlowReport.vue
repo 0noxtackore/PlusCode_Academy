@@ -82,9 +82,9 @@ const cashFlow = ref({
 
 const reportMonth = ref(props.date.substring(0, 7))
 
-const updateReport = () => {
+const updateReport = async () => {
   const date = new Date(reportMonth.value + '-01')
-  cashFlow.value = generateCashFlowStatement(date)
+  cashFlow.value = await generateCashFlowStatement(date)
 }
 
 const getPaymentMethodLabel = (method) => {
@@ -106,7 +106,7 @@ watch(() => props.date, (newDate) => {
   updateReport()
 })
 
-onMounted(() => {
-  updateReport()
+onMounted(async () => {
+  await updateReport()
 })
 </script>

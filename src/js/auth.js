@@ -1,80 +1,30 @@
 /**
- * auth.js — Módulo de autenticación
+ * auth.js — Módulo de autenticación (MySQL/PHP API)
  * Maneja el login, logout y verificación de sesión.
- * Usa sessionStorage para que la sesión dure mientras el tab está abierto.
- *
- * USUARIO POR DEFECTO (hardcoded para frontend puro sin backend):
- *   Username: admin
- *   Password: admin123
  */
 
-// -----------------------------------------------------------------------
-// Usuarios y roles del sistema
-// -----------------------------------------------------------------------
-const USERS = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    name: 'Administrador',
-    email: 'admin@pluscode.edu',
-    role: 'admin',
-    permissions: ['students', 'courses', 'enrollments', 'payments', 'reports', 'expenses', 'teachers', 'inventory']
-  },
-  {
-    username: 'recepcion',
-    password: 'rec123',
-    name: 'María Recepción',
-    email: 'maria.recepcion@pluscode.edu',
-    role: 'receptionista',
-    permissions: ['students', 'courses', 'enrollments', 'payments']
-  },
-  {
-    username: 'caja',
-    password: 'caja123',
-    name: 'Carlos Caja',
-    email: 'carlos.caja@pluscode.edu',
-    role: 'cajero',
-    permissions: ['payments', 'reports']
-  },
-  {
-    username: 'control',
-    password: 'ctrl123',
-    name: 'Ana Control',
-    email: 'ana.control@pluscode.edu',
-    role: 'control_academico',
-    permissions: ['students', 'courses', 'enrollments', 'reports']
-  }
-]
+import { api } from './apiClient.js'
 
 /**
  * Intenta autenticar al usuario con username y contraseña.
- * Compara contra el usuario por defecto hardcoded.
  *
- * @param {string} username - Nombre de usuario ingresado
+ * @param {string} username - Nombre de usuario o email ingresado
  * @param {string} password - Contraseña ingresada
  * @returns {boolean} true si las credenciales son correctas, false en caso contrario
  */
-export function login(username, password) {
-  const identifier = String(username || '').trim().toLowerCase()
-  const pass = String(password || '')
-
-  // Buscar usuario en el array de usuarios (por username o email)
-  const user = USERS.find(u => {
-    const userName = String(u.username || '').trim().toLowerCase()
-    const userEmail = String(u.email || '').trim().toLowerCase()
-    return (userName === identifier || userEmail === identifier) && u.password === pass
-  })
-  
-  if (user) {
-    // Guardar datos de sesión en sessionStorage
-    sessionStorage.setItem('loggedIn', 'true')
-    sessionStorage.setItem('userName', user.name)
-    sessionStorage.setItem('userRole', user.role)
-    sessionStorage.setItem('userPermissions', JSON.stringify(user.permissions))
-    return true
-  }
-  // Credenciales incorrectas
-  return false
+export async function login(username, password) {
+    const response = await api.login(username, password)
+    
+    if (response && response.success && response.user) {
+      const user = response.user
+      // Guardar datos de sesión en sessionStorage
+      sessionStorage.setItem('loggedIn', 'true')
+      sessionStorage.setItem('userName', user.name)
+      sessionStorage.setItem('userRole', user.role)
+      sessionStorage.setItem('userPermissions', JSON.stringify(user.permissions || []))
+      return true
+    }
+    return false
 }
 
 /**
@@ -108,7 +58,7 @@ export function getCurrentUserName() {
 
 /**
  * Obtiene el tipo de usuario logueado.
- * @returns {string} Rol del usuario (admin, receptionist, cashier, academic_control)
+ * @returns {string} Rol del usuario
  */
 export function getCurrentUserRole() {
   return sessionStorage.getItem('userRole') || ''
@@ -117,9 +67,9 @@ export function getCurrentUserRole() {
 export function getRoleLabel(role) {
   const r = String(role || '').trim()
   if (r === 'admin') return 'Administrador'
-  if (r === 'receptionist') return 'Recepción'
-  if (r === 'cashier') return 'Caja / Facturación'
-  if (r === 'academic_control') return 'Control de Estudios'
+  if (r === 'receptionista') return 'Recepción'
+  if (r === 'cajero') return 'Caja / Facturación'
+  if (r === 'control_academico') return 'Control de Estudios'
   return 'Usuario'
 }
 
@@ -146,6 +96,12 @@ export function hasPermission(module) {
   return permissions.includes(module)
 }
 
-export function getSystemUsers() {
-  return USERS.map(({ password, ...rest }) => ({ ...rest }))
+// Ahora los usuarios se obtienen asíncronamente
+export async function getSystemUsers() {
+  try {
+    const users = await api.get('users') // requires a users endpoint or fallback
+    return users
+  } catch (e) {
+    return []
+  }
 }

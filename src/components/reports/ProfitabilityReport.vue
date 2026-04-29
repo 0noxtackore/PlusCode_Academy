@@ -147,8 +147,8 @@ const overallMargin = computed(() => {
   return totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0
 })
 
-const updateReport = () => {
-  profitability.value = generateProfitabilityAnalysis()
+const updateReport = async () => {
+  profitability.value = await generateProfitabilityAnalysis()
   profitability.value.summary.totalProfit = profitability.value.summary.totalRevenue - profitability.value.summary.totalExpenses
   renderCharts()
 }
@@ -257,7 +257,7 @@ const renderCharts = () => {
   }
 }
 
-onMounted(() => {
-  updateReport()
+onMounted(async () => {
+  await updateReport()
 })
 </script>

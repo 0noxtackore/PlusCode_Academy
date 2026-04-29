@@ -9,48 +9,47 @@ import { getExpenses } from './expenses.js'
 // -----------------------------------------------------------------------
 // Validaciones de Estudiantes
 // -----------------------------------------------------------------------
-export function validateStudent(studentData) {
+export async function validateStudent(studentData) {
     const errors = []
+    const students = await getStudents()
     
     // Validar cédula única
-    if (!studentData.idNumber || studentData.idNumber.trim() === '') {
-        errors.push('ID number is required')
+    if (!studentData.idNumber || String(studentData.idNumber).trim() === '') {
+        errors.push('El número de identificación es requerido')
     } else {
-        const students = getStudents()
         const existingStudent = students.find(s => 
             s.idNumber === studentData.idNumber && 
             s.id !== studentData.id
         )
         if (existingStudent) {
-            errors.push('ID number already exists')
+            errors.push('El número de identificación ya existe')
         }
     }
     
     // Validar email único
     if (studentData.email && studentData.email.trim() !== '') {
-        const students = getStudents()
         const existingEmail = students.find(s => 
             s.email === studentData.email && 
             s.id !== studentData.id
         )
         if (existingEmail) {
-            errors.push('Email already exists')
+            errors.push('El correo electrónico ya existe')
         }
         
         // Validar formato de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(studentData.email)) {
-            errors.push('Invalid email format')
+            errors.push('Formato de correo electrónico inválido')
         }
     }
     
     // Validar campos requeridos
     if (!studentData.name || studentData.name.trim() === '') {
-        errors.push('First name is required')
+        errors.push('El nombre es requerido')
     }
     
     if (!studentData.lastName || studentData.lastName.trim() === '') {
-        errors.push('Last name is required')
+        errors.push('El apellido es requerido')
     }
     
     return {
@@ -62,39 +61,39 @@ export function validateStudent(studentData) {
 // -----------------------------------------------------------------------
 // Validaciones de Cursos
 // -----------------------------------------------------------------------
-export function validateCourse(courseData) {
+export async function validateCourse(courseData) {
     const errors = []
+    const courses = await getCourses()
     
     // Validar código único
-    if (!courseData.code || courseData.code.trim() === '') {
-        errors.push('Course code is required')
+    if (!courseData.code || String(courseData.code).trim() === '') {
+        errors.push('El código del curso es requerido')
     } else {
-        const courses = getCourses()
         const existingCourse = courses.find(c => 
             c.code === courseData.code && 
             c.id !== courseData.id
         )
         if (existingCourse) {
-            errors.push('Course code already exists')
+            errors.push('El código del curso ya existe')
         }
     }
     
     // Validar campos requeridos
     if (!courseData.name || courseData.name.trim() === '') {
-        errors.push('Course name is required')
+        errors.push('El nombre del curso es requerido')
     }
     
     if (!courseData.credits || courseData.credits <= 0) {
-        errors.push('Credits must be greater than 0')
+        errors.push('Los créditos deben ser mayores a 0')
     }
     
     if (!courseData.fee || courseData.fee <= 0) {
-        errors.push('Fee must be greater than 0')
+        errors.push('El costo debe ser mayor a 0')
     }
     
     // Validar capacidad máxima
-    if (courseData.maxCapacity && courseData.maxCapacity <= 0) {
-        errors.push('Maximum capacity must be greater than 0')
+    if (courseData.maxCapacity !== undefined && Number(courseData.maxCapacity) < 0) {
+        errors.push('La capacidad máxima no puede ser negativa')
     }
     
     return {
@@ -106,50 +105,54 @@ export function validateCourse(courseData) {
 // -----------------------------------------------------------------------
 // Validaciones de Matrículas
 // -----------------------------------------------------------------------
-export function validateEnrollment(enrollmentData) {
+export async function validateEnrollment(enrollmentData) {
     const errors = []
     
     // Validar que el estudiante exista
-    const students = getStudents()
-    const student = students.find(s => s.id === enrollmentData.studentId)
+    const students = await getStudents()
+    const student = students.find(s => s.id == enrollmentData.studentId)
     if (!student) {
-        errors.push('Student not found')
+        errors.push('Estudiante no encontrado')
     } else if (student.status !== 'Active') {
-        errors.push('Cannot enroll inactive students')
+        errors.push('No se puede matricular a un estudiante inactivo')
     }
     
     // Validar que el curso exista
-    const courses = getCourses()
-    const course = courses.find(c => c.id === enrollmentData.courseId)
+    const courses = await getCourses()
+    const course = courses.find(c => c.id == enrollmentData.courseId)
     if (!course) {
-        errors.push('Course not found')
+        errors.push('Curso no encontrado')
     } else if (course.status !== 'Active') {
-        errors.push('Cannot enroll in inactive courses')
+        errors.push('No se puede matricular en un curso inactivo')
     }
     
+    const enrollments = await getEnrollments()
+
     // Validar cupos disponibles
     if (course) {
-        const enrollments = getEnrollments()
         const currentEnrollments = enrollments.filter(e => 
-            e.courseId === enrollmentData.courseId && 
+            e.courseId == enrollmentData.courseId && 
             e.status === 'Active'
         ).length
         
-        if (currentEnrollments >= course.maxCapacity) {
-            errors.push('Course has reached maximum capacity')
+        // Si maxCapacity es 0 o null, asumimos 999
+        const rawCap = Number(course.maxCapacity)
+        const maxCapacity = (rawCap > 0) ? rawCap : 999 
+
+        if (currentEnrollments >= maxCapacity) {
+            errors.push(`El curso ha alcanzado su capacidad máxima (${maxCapacity})`)
         }
     }
     
     // Validar matrícula duplicada
-    const enrollments = getEnrollments()
     const existingEnrollment = enrollments.find(e => 
-        e.studentId === enrollmentData.studentId && 
-        e.courseId === enrollmentData.courseId && 
+        e.studentId == enrollmentData.studentId && 
+        e.courseId == enrollmentData.courseId && 
         e.status === 'Active' &&
-        e.id !== enrollmentData.id
+        e.id != enrollmentData.id
     )
     if (existingEnrollment) {
-        errors.push('Student is already enrolled in this course')
+        errors.push('El estudiante ya está matriculado en este curso')
     }
     
     return {
@@ -161,39 +164,39 @@ export function validateEnrollment(enrollmentData) {
 // -----------------------------------------------------------------------
 // Validaciones de Pagos
 // -----------------------------------------------------------------------
-export function validatePayment(paymentData) {
+export async function validatePayment(paymentData) {
     const errors = []
     
     // Validar que la matrícula exista
-    const enrollments = getEnrollments()
-    const enrollment = enrollments.find(e => e.id === paymentData.enrollmentId)
+    const enrollments = await getEnrollments()
+    const enrollment = enrollments.find(e => e.id == paymentData.enrollmentId)
     if (!enrollment) {
-        errors.push('Enrollment not found')
+        errors.push('Matrícula no encontrada')
     }
     
     // Validar referencia única
     if (paymentData.reference && paymentData.reference.trim() !== '') {
-        const payments = getPayments()
+        const payments = await getPayments()
         const existingPayment = payments.find(p => 
             p.reference === paymentData.reference && 
-            p.id !== paymentData.id
+            p.id != paymentData.id
         )
         if (existingPayment) {
-            errors.push('Payment reference already exists')
+            errors.push('La referencia de pago ya existe')
         }
     }
     
     // Validar campos requeridos
     if (!paymentData.amount || paymentData.amount <= 0) {
-        errors.push('Payment amount must be greater than 0')
+        errors.push('El monto del pago debe ser mayor a 0')
     }
     
     if (!paymentData.paymentDate) {
-        errors.push('Payment date is required')
+        errors.push('La fecha de pago es requerida')
     }
     
     if (!paymentData.method) {
-        errors.push('Payment method is required')
+        errors.push('El método de pago es requerido')
     }
     
     // Validar que la fecha no sea futura
@@ -201,49 +204,7 @@ export function validatePayment(paymentData) {
         const paymentDate = new Date(paymentData.paymentDate)
         const today = new Date()
         if (paymentDate > today) {
-            errors.push('Payment date cannot be in the future')
-        }
-    }
-    
-    return {
-        isValid: errors.length === 0,
-        errors: errors
-    }
-}
-
-// -----------------------------------------------------------------------
-// Validaciones de Egresos
-// -----------------------------------------------------------------------
-export function validateExpense(expenseData) {
-    const errors = []
-    
-    // Validar campos requeridos
-    if (!expenseData.categoryId) {
-        errors.push('Expense category is required')
-    }
-    
-    if (!expenseData.description || expenseData.description.trim() === '') {
-        errors.push('Expense description is required')
-    }
-    
-    if (!expenseData.amount || expenseData.amount <= 0) {
-        errors.push('Expense amount must be greater than 0')
-    }
-    
-    if (!expenseData.date) {
-        errors.push('Expense date is required')
-    }
-    
-    if (!expenseData.paymentMethod) {
-        errors.push('Payment method is required')
-    }
-    
-    // Validar que la fecha no sea futura
-    if (expenseData.date) {
-        const expenseDate = new Date(expenseData.date)
-        const today = new Date()
-        if (expenseDate > today) {
-            errors.push('Expense date cannot be in the future')
+            errors.push('La fecha de pago no puede ser futura')
         }
     }
     
@@ -256,69 +217,28 @@ export function validateExpense(expenseData) {
 // -----------------------------------------------------------------------
 // Validaciones de Negocio Adicionales
 // -----------------------------------------------------------------------
-export function validateCourseCapacity(courseId) {
-    const course = getCourses().find(c => c.id === courseId)
+export async function validateCourseCapacity(courseId) {
+    const courses = await getCourses()
+    const course = courses.find(c => c.id == courseId)
     if (!course) {
-        return { isValid: false, errors: ['Course not found'] }
+        return { isValid: false, errors: ['Curso no encontrado'] }
     }
     
-    const enrollments = getEnrollments().filter(e => 
-        e.courseId === courseId && e.status === 'Active'
+    const enrollments = await getEnrollments()
+    const courseEnrollments = enrollments.filter(e => 
+        e.courseId == courseId && e.status === 'Active'
     )
     
-    const isFull = enrollments.length >= course.maxCapacity
+    const rawCap = Number(course.maxCapacity)
+    const maxCapacity = (rawCap > 0) ? rawCap : 999
+    const isFull = courseEnrollments.length >= maxCapacity
     
     return {
         isValid: !isFull,
-        errors: isFull ? ['Course has reached maximum capacity'] : [],
-        currentEnrollment: enrollments.length,
-        maxCapacity: course.maxCapacity,
-        availableSlots: course.maxCapacity - enrollments.length
-    }
-}
-
-export function validatePaymentReference(reference, excludeId = null) {
-    const payments = getPayments()
-    const existingPayment = payments.find(p => 
-        p.reference === reference && 
-        p.id !== excludeId
-    )
-    
-    return {
-        isValid: !existingPayment,
-        errors: existingPayment ? ['Payment reference already exists'] : []
-    }
-}
-
-export function validateStudentStatus(studentId) {
-    const student = getStudents().find(s => s.id === studentId)
-    
-    if (!student) {
-        return { isValid: false, errors: ['Student not found'], status: null }
-    }
-    
-    const isActive = student.status === 'Active'
-    
-    return {
-        isValid: isActive,
-        errors: isActive ? [] : ['Student is not active'],
-        status: student.status
-    }
-}
-
-export function validateCourseStatus(courseId) {
-    const course = getCourses().find(c => c.id === courseId)
-    
-    if (!course) {
-        return { isValid: false, errors: ['Course not found'], status: null }
-    }
-    
-    const isActive = course.status === 'Active'
-    
-    return {
-        isValid: isActive,
-        errors: isActive ? [] : ['Course is not active'],
-        status: course.status
+        errors: isFull ? [`El curso ha alcanzado su capacidad máxima (${maxCapacity})`] : [],
+        currentEnrollment: courseEnrollments.length,
+        maxCapacity: maxCapacity,
+        availableSlots: maxCapacity - courseEnrollments.length
     }
 }
 
@@ -327,58 +247,4 @@ export function validateCourseStatus(courseId) {
 // -----------------------------------------------------------------------
 export function formatValidationErrors(errors) {
     return errors.map(error => `• ${error}`).join('\n')
-}
-
-export function showValidationAlert(errors) {
-    alert(`Validation Errors:\n\n${formatValidationErrors(errors)}`)
-}
-
-// -----------------------------------------------------------------------
-// Validaciones de integridad de datos
-// -----------------------------------------------------------------------
-export function validateDataIntegrity() {
-    const issues = []
-    
-    // Verificar matrículas huérfanas
-    const enrollments = getEnrollments()
-    const students = getStudents()
-    const courses = getCourses()
-    
-    enrollments.forEach(enrollment => {
-        const studentExists = students.some(s => s.id === enrollment.studentId)
-        const courseExists = courses.some(c => c.id === enrollment.courseId)
-        
-        if (!studentExists) {
-            issues.push(`Enrollment ${enrollment.id} references non-existent student ${enrollment.studentId}`)
-        }
-        
-        if (!courseExists) {
-            issues.push(`Enrollment ${enrollment.id} references non-existent course ${enrollment.courseId}`)
-        }
-    })
-    
-    // Verificar pagos huérfanos
-    const payments = getPayments()
-    payments.forEach(payment => {
-        const enrollmentExists = enrollments.some(e => e.id === payment.enrollmentId)
-        if (!enrollmentExists) {
-            issues.push(`Payment ${payment.id} references non-existent enrollment ${payment.enrollmentId}`)
-        }
-    })
-    
-    // Verificar consistencia de cupos
-    courses.forEach(course => {
-        const actualEnrollment = enrollments.filter(e => 
-            e.courseId === course.id && e.status === 'Active'
-        ).length
-        
-        if (course.currentEnrollment !== actualEnrollment) {
-            issues.push(`Course ${course.code} has inconsistent enrollment count: ${course.currentEnrollment} vs ${actualEnrollment}`)
-        }
-    })
-    
-    return {
-        hasIssues: issues.length > 0,
-        issues: issues
-    }
 }

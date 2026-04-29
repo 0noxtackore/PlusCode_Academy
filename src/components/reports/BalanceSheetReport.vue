@@ -124,8 +124,8 @@ const balanceStatus = computed(() => {
   return 'DESCUADRADO'
 })
 
-const updateReport = () => {
-  balanceSheet.value = generateBalanceSheet(new Date(reportDate.value))
+const updateReport = async () => {
+  balanceSheet.value = await generateBalanceSheet(new Date(reportDate.value))
 }
 
 const formatMoney = (amount) => {
@@ -137,7 +137,7 @@ watch(() => props.date, (newDate) => {
   updateReport()
 })
 
-onMounted(() => {
-  updateReport()
+onMounted(async () => {
+  await updateReport()
 })
 </script>

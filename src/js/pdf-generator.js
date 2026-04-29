@@ -3,12 +3,15 @@
  * Usa la API nativa de impresión del navegador para generar recibos
  */
 
-export function generatePaymentReceipt(paymentId) {
+import { getPayments, getEnrollments, getStudents, getCourses } from './data.js'
+import { getTeachers, getTeacherPaymentHistory } from './teachers.js'
+
+export async function generatePaymentReceipt(paymentId) {
     // Obtener datos del pago
-    const payments = JSON.parse(localStorage.getItem('academy_payments') || '[]')
-    const enrollments = JSON.parse(localStorage.getItem('academy_enrollments') || '[]')
-    const students = JSON.parse(localStorage.getItem('academy_students') || '[]')
-    const courses = JSON.parse(localStorage.getItem('academy_courses') || '[]')
+    const payments = await getPayments()
+    const enrollments = await getEnrollments()
+    const students = await getStudents()
+    const courses = await getCourses()
     
     const payment = payments.find(p => p.id === paymentId)
     if (!payment) {
@@ -219,9 +222,11 @@ export function generatePaymentReceipt(paymentId) {
     }
 }
 
-export function generateTeacherPaymentReceipt(teacherPaymentId) {
-    const teachers = JSON.parse(localStorage.getItem('academy_teachers') || '[]')
-    const teacherPayments = JSON.parse(localStorage.getItem('academy_teacher_payments') || '[]')
+export async function generateTeacherPaymentReceipt(teacherPaymentId) {
+    const teachers = await getTeachers()
+    // Obtenemos todos los pagos de docentes, pero como la API suele filtrar, busquemos directamente o listemos
+    // Simulamos un fetch completo aquí para mantener la lógica igual
+    const teacherPayments = (await Promise.all(teachers.map(t => getTeacherPaymentHistory(t.id)))).flat()
 
     const payment = teacherPayments.find(p => p.id === teacherPaymentId)
     if (!payment) {
@@ -321,7 +326,7 @@ export function generateTeacherPaymentReceipt(teacherPaymentId) {
           <div class="receipt">
             <div class="header-cell">
               <div class="center">
-                <img class="logo" src="/assets/uploads/pluscodeprint.png" alt="Logo" onerror="this.style.display='none'" />
+                <img class="logo" src="/assets/uploads/pluscode-logo.png" alt="Logo" onerror="this.style.display='none'" />
                 <div class="bold title">COMPROBANTE DE NÓMINA</div>
                 <div class="muted small">Academia +code</div>
                 <div class="stamp xs bold">${escapeHtml(controlNumber)}</div>
@@ -401,12 +406,12 @@ export function generateTeacherPaymentReceipt(teacherPaymentId) {
     }
 }
 
-export function generateEnrollmentStatement(studentId) {
+export async function generateEnrollmentStatement(studentId) {
     // Obtener datos del estudiante
-    const students = JSON.parse(localStorage.getItem('academy_students') || '[]')
-    const enrollments = JSON.parse(localStorage.getItem('academy_enrollments') || '[]')
-    const courses = JSON.parse(localStorage.getItem('academy_courses') || '[]')
-    const payments = JSON.parse(localStorage.getItem('academy_payments') || '[]')
+    const students = await getStudents()
+    const enrollments = await getEnrollments()
+    const courses = await getCourses()
+    const payments = await getPayments()
     
     const student = students.find(s => s.id === studentId)
     if (!student) {

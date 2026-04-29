@@ -172,18 +172,21 @@ const recentPayments = ref([])
 const userName = ref('')
 const topEnrollmentsByCourse = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
 
   // Obtener conteos desde data.js
-  stats.value = getDashboardStats()
+  stats.value = await getDashboardStats()
 
-  stats.value.totalTeachers = getActiveTeachersCount()
+  // TODO: getActiveTeachersCount needs to be async if teachers.js is refactored
+  // For now we await it just in case it is already async
+  stats.value.totalTeachers = await getActiveTeachersCount()
 
-  topEnrollmentsByCourse.value = getEnrollmentsByCourseSummary().slice(0, 8)
+  const enrollmentsSummary = await getEnrollmentsByCourseSummary()
+  topEnrollmentsByCourse.value = enrollmentsSummary.slice(0, 8)
 
   // Obtener todos los pagos y ordenarlos
-  const allPayments = getPaymentsWithDetails()
+  const allPayments = await getPaymentsWithDetails()
   // Ordenar descendente por id (simulando fecha más reciente)
   allPayments.sort((a, b) => b.id - a.id)
   recentPayments.value = allPayments

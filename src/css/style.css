@@ -1372,12 +1372,6 @@ body {
   line-height: 1.15;
 }
 
-.table-wrapper-scroll-y {
-  max-height: 520px;
-  overflow-y: auto;
-  overflow-x: auto;
-}
-
 .table-professional tr:last-child td {
   border-bottom: none;
 }

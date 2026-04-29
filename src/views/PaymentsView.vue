@@ -343,14 +343,16 @@ const scrollToHistory = () => {
   el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const loadData = () => {
+const loadData = async () => {
   // Cargar lista enriquecida (con nombres)
-  paymentsList.value = getPaymentsWithDetails()
+  paymentsList.value = await getPaymentsWithDetails()
 
   // Preparar select de matrículas
-  const enrollments = getEnrollments()
-  const students = getStudents()
-  const courses = getCourses()
+  const [enrollments, students, courses] = await Promise.all([
+    getEnrollments(),
+    getStudents(),
+    getCourses()
+  ])
 
   activeEnrollments.value = enrollments.map(e => {
     const student = students.find(s => s.id === e.studentId) || {}
@@ -364,10 +366,10 @@ const loadData = () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
   userRole.value = getCurrentUserRole() || ''
-  loadData()
+  await loadData()
 })
 
 // Computed property de búsqueda
@@ -411,7 +413,7 @@ const openModal = (payment = null) => {
   isModalOpen.value = true
 }
 
-const savePayment = () => {
+const savePayment = async () => {
   if (!formRef.value.checkValidity()) {
     formRef.value.reportValidity()
     return
@@ -421,7 +423,7 @@ const savePayment = () => {
   data.enrollmentId = Number(data.enrollmentId)
   data.amount = Number(data.amount)
 
-  const validation = validatePayment(data)
+  const validation = await validatePayment(data)
   if (!validation.isValid) {
     const msg = (validation.errors || []).includes('Payment reference already exists')
       ? 'El número de referencia ya existe. Debes usar uno diferente.'
@@ -437,19 +439,19 @@ const savePayment = () => {
   }
 
   if (data.id) {
-    updatePayment(data.id, data)
+    await updatePayment(data.id, data)
     showToast('Pago actualizado exitosamente')
   } else {
-    addPayment(data)
+    await addPayment(data)
     showToast('Pago procesado exitosamente')
   }
 
-  loadData()
+  await loadData()
   isModalOpen.value = false
 }
 
-const generateReceipt = (paymentId) => {
-  generatePaymentReceipt(paymentId)
+const generateReceipt = async (paymentId) => {
+  await generatePaymentReceipt(paymentId)
 }
 
 const editPayment = (payment) => {
@@ -474,13 +476,13 @@ const closeDeleteModal = () => {
   pendingDeletePaymentId.value = null
 }
 
-const confirmDeletePayment = () => {
+const confirmDeletePayment = async () => {
   if (!pendingDeletePaymentId.value) {
     closeDeleteModal()
     return
   }
-  deletePayment(pendingDeletePaymentId.value)
-  loadData()
+  await deletePayment(pendingDeletePaymentId.value)
+  await loadData()
   showToast('Pago eliminado', 'success')
   closeDeleteModal()
 }

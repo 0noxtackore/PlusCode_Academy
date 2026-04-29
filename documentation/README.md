@@ -1,9 +1,9 @@
-# Project Plan — +code Academic Management System
+# Project Documentation — +code Academic Management System
 
 ## 1) Overview
 This project is a web application built with **Vue 3** and **Vite** for academic management (students, teachers, courses, enrollments, payments, etc.).
 
-The main objectives of this project:
+The main objectives of this project were:
 - Build a comprehensive academic management system with multiple modules
 - Implement Role-Based Access Control (RBAC) with multiple user roles
 - Develop financial reporting capabilities (Balance Sheet, Income Statement, Cash Flow)

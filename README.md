@@ -41,6 +41,153 @@ Key files at the root:
 - **`package.json`**: scripts and dependencies.
 - **`install-deps.bat` / `install-deps.sh`**: helpers to install dependencies.
 - **`start-dev.bat` / `start-dev.sh`**: helpers to start the dev server.
+- **`database/`**: SQL scripts for database setup and seed data.
+
+## Database & PHP API Backend
+
+PlusCode Academy uses a **MySQL database** with **PHP REST API** for data persistence. The frontend (Vue.js) communicates with the backend through these APIs.
+
+### Database Architecture
+
+```
+┌─────────────┐      HTTP/REST       ┌─────────────┐      SQL       ┌─────────────┐
+│  Vue.js     │ ◄──────────────────► │  PHP API    │ ◄────────────► │   MySQL     │
+│  Frontend   │    JSON Requests     │  (REST)     │    Queries     │  Database   │
+└─────────────┘                      └─────────────┘                └─────────────┘
+```
+
+### Database Features
+
+- **9 Core Tables**: `users`, `students`, `courses`, `enrollments`, `payments`, `teachers`, `teacher_payments`, `expenses`, `expense_categories`
+- **40+ Seed Records** per table for realistic testing
+- **RBAC System**: Role-based access control with permissions
+- **Financial Tracking**: Complete payment, expense, and payroll management
+- **Data Integrity**: Foreign key constraints and validation rules
+
+### Database Installation
+
+#### Prerequisites
+
+- **MySQL** 5.7+ or **MariaDB** 10.4+
+- **PHP** 7.4+ with PDO MySQL extension
+- **Web Server**: Apache or Nginx
+
+#### Step 1: Create Database
+
+```sql
+-- Login to MySQL as root
+mysql -u root -p
+
+-- Create database
+CREATE DATABASE pluscode_academy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Create user (optional, or use existing root)
+CREATE USER 'pluscode_user'@'localhost' IDENTIFIED BY 'your_secure_password';
+GRANT ALL PRIVILEGES ON pluscode_academy.* TO 'pluscode_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+#### Step 2: Import Database Schema and Seed Data
+
+```bash
+# Navigate to database folder
+cd database/
+
+# Import schema and seed data
+mysql -u root -p pluscode_academy < pluscode_academy.sql
+```
+
+#### Step 3: Configure PHP API
+
+1. Place the PHP API files in your web server directory (e.g., `htdocs/api/` or `var/www/html/api/`)
+2. Update database credentials in the API configuration file:
+
+```php
+// api/config/database.php
+$host = 'localhost';
+$dbname = 'pluscode_academy';
+$username = 'pluscode_user';  // or 'root'
+$password = 'your_secure_password';
+```
+
+3. Test the API endpoint:
+```bash
+curl http://localhost/api/test-connection.php
+```
+
+Expected response:
+```json
+{
+  "success": true,
+  "message": "Database connection successful"
+}
+```
+
+### Default Users (Seed Data)
+
+The database comes with pre-configured users for testing:
+
+| Username | Password | Role | Permissions |
+|----------|----------|------|-------------|
+| `admin` | `admin123` | Administrator | Full access to all modules |
+| `recepcion` | `rec123` | Reception | Students, Courses, Enrollments, Payments |
+| `caja` | `caja123` | Cashier | Payments, Reports |
+| `control` | `ctrl123` | Academic Control | Students, Courses, Enrollments, Reports |
+
+### Database File Structure
+
+```
+database/
+├── pluscode_academy.sql          # Main schema + seed data (30-50 records per table)
+├── schema.sql                     # Schema only (no data)
+└── seed_massive_data.sql          # Procedure for generating 100+ records per table
+```
+
+### Massive Data Generation (Optional)
+
+For stress testing with 100+ records per table:
+
+```sql
+-- Run the stored procedure
+USE pluscode_academy;
+CALL PopulateMassiveData();
+```
+
+This will generate:
+- 110 expense categories
+- 105 courses
+- 110 teachers
+- 100 users
+- 120 students
+- 150 enrollments
+- 150 payments
+- 150 expenses
+- 150 teacher payments
+
+### API Endpoints
+
+The PHP API provides RESTful endpoints for all CRUD operations:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/login` | POST | User authentication |
+| `/api/students` | GET/POST | List/Create students |
+| `/api/students/{id}` | GET/PUT/DELETE | Read/Update/Delete student |
+| `/api/courses` | GET/POST | List/Create courses |
+| `/api/enrollments` | GET/POST | List/Create enrollments |
+| `/api/payments` | GET/POST | List/Create payments |
+| `/api/teachers` | GET/POST | List/Create teachers |
+| `/api/expenses` | GET/POST | List/Create expenses |
+| `/api/reports/dashboard` | GET | Dashboard statistics |
+| `/api/reports/financial` | GET | Financial reports |
+
+### Troubleshooting Database Issues
+
+- **Connection refused**: Verify MySQL service is running
+- **Access denied**: Check credentials in PHP config file
+- **Table doesn't exist**: Ensure SQL import completed successfully
+- **Foreign key errors**: Check seed data was imported in correct order
 
 ## Recommended IDE Setup
 

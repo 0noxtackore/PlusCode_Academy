@@ -336,33 +336,39 @@ const filteredExpenses = computed(() => {
   return filtered.sort((a, b) => new Date(b.date) - new Date(a.date))
 })
 
-const totalMonthExpenses = computed(() => {
-  const now = new Date()
-  return getTotalExpensesByMonth(now.getFullYear(), now.getMonth() + 1)
-})
-
-const totalYearExpenses = computed(() => {
-  const now = new Date()
-  const yearExpenses = expenses.value.filter(expense => {
-    const expenseDate = new Date(expense.date)
-    return expenseDate.getFullYear() === now.getFullYear()
-  })
-  return yearExpenses.reduce((total, expense) => total + expense.amount, 0)
-})
-
-const monthExpensesCount = computed(() => {
-  const now = new Date()
-  return getExpensesByMonth(now.getFullYear(), now.getMonth() + 1).length
-})
-
-const cashBalance = computed(() => {
-  return getCashBalance()
-})
+const totalMonthExpenses = ref(0)
+const totalYearExpenses = ref(0)
+const monthExpensesCount = ref(0)
+const cashBalance = ref({ balance: 0, income: 0, expenses: 0 })
 
 // Métodos
-const loadData = () => {
-  expenses.value = getExpenses()
-  categories.value = getExpenseCategories()
+const loadData = async () => {
+  const [exps, cats, balance] = await Promise.all([
+    getExpenses(),
+    getExpenseCategories(),
+    getCashBalance()
+  ])
+  expenses.value = exps
+  categories.value = cats
+  cashBalance.value = balance
+
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  
+  const monthExps = exps.filter(e => {
+    const d = new Date(e.date)
+    return d.getFullYear() === year && (d.getMonth() + 1) === month
+  })
+  
+  const yearExps = exps.filter(e => {
+    const d = new Date(e.date)
+    return d.getFullYear() === year
+  })
+  
+  totalMonthExpenses.value = monthExps.reduce((sum, e) => sum + Number(e.amount), 0)
+  monthExpensesCount.value = monthExps.length
+  totalYearExpenses.value = yearExps.reduce((sum, e) => sum + Number(e.amount), 0)
 }
 
 const getCategoryName = (categoryId) => {
@@ -410,7 +416,7 @@ const closeModal = () => {
   editingExpense.value = null
 }
 
-const saveExpense = () => {
+const saveExpense = async () => {
   if (formRef.value && !formRef.value.checkValidity()) {
     formRef.value.reportValidity()
     return
@@ -418,14 +424,14 @@ const saveExpense = () => {
 
   try {
     if (editingExpense.value) {
-      updateExpense(editingExpense.value.id, expenseForm.value)
+      await updateExpense(editingExpense.value.id, expenseForm.value)
       showToast('Gasto actualizado correctamente', 'success')
     } else {
-      addExpense(expenseForm.value)
+      await addExpense(expenseForm.value)
       showToast('Gasto registrado correctamente', 'success')
     }
     closeModal()
-    loadData()
+    await loadData()
   } catch (error) {
     showToast(error?.message || 'Error al guardar el gasto', 'error')
   }
@@ -441,16 +447,16 @@ const closeDeleteModal = () => {
   pendingDeleteExpenseId.value = null
 }
 
-const confirmDeleteExpense = () => {
+const confirmDeleteExpense = async () => {
   if (!pendingDeleteExpenseId.value) {
     closeDeleteModal()
     return
   }
 
   try {
-    deleteExpense(pendingDeleteExpenseId.value)
+    await deleteExpense(pendingDeleteExpenseId.value)
     showToast('Gasto eliminado correctamente', 'success')
-    loadData()
+    await loadData()
   } catch (error) {
     showToast('Error al eliminar el gasto', 'error')
   }
@@ -493,8 +499,8 @@ const formatMoneyFull = (val) => {
   return Number(val).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
-  loadData()
+  await loadData()
 })
 </script>

@@ -125,14 +125,14 @@
               <label class="form-label">Código del Curso *</label>
               <div class="input-wrapper">
                 <i class="fa fa-hashtag input-icon"></i>
-                <input type="text" class="form-control" v-model="formData.code" required placeholder="Ej: DIS202">
+                <input type="text" class="form-control" v-model="formData.code" required placeholder="Ej: MAT101">
               </div>
             </div>
             <div class="form-group">
               <label class="form-label">Nombre del Curso *</label>
               <div class="input-wrapper">
                 <i class="fa fa-book-open input-icon"></i>
-                <input type="text" class="form-control" v-model="formData.name" required placeholder="Ej: Diseño Gráfico">
+                <input type="text" class="form-control" v-model="formData.name" required placeholder="Ej: Matemáticas Básicas">
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@
               <label class="form-label">Créditos *</label>
               <div class="input-wrapper">
                 <i class="fa fa-layer-group input-icon"></i>
-                <input type="number" class="form-control" v-model="formData.credits" required min="0" max="300">
+                <input type="number" class="form-control" v-model="formData.credits" required min="1" max="6">
               </div>
             </div>
             <div class="form-group">
@@ -150,6 +150,16 @@
               <div class="input-wrapper">
                 <i class="fa fa-dollar-sign input-icon"></i>
                 <input type="number" class="form-control" v-model="formData.fee" required min="0" step="0.01">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Capacidad Máxima *</label>
+              <div class="input-wrapper">
+                <i class="fa fa-users input-icon"></i>
+                <input type="number" class="form-control" v-model="formData.maxCapacity" required min="1" placeholder="Ej: 30">
               </div>
             </div>
           </div>
@@ -223,8 +233,9 @@ const formData = ref({
   id: null,
   code: '',
   name: '',
-  credits: '',
+  credits: 3,
   fee: 0,
+  maxCapacity: 30,
   status: 'Active'
 })
 
@@ -245,17 +256,18 @@ const formatMoneyFull = (val) => {
   return Number(val).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+const CREDITS_MAX = 4
+
 const formatCredits = (val) => {
   const n = Number(val)
   const credits = Number.isFinite(n) ? n : 0
-  if (credits <= 0) return 'Agotado'
-  return `${credits}`
+  return `${credits}/${CREDITS_MAX}`
 }
 
 const creditsStatusClass = (val) => {
   const n = Number(val)
   const credits = Number.isFinite(n) ? n : 0
-  return credits <= 0 ? 'text-danger font-bold' : 'text-success font-bold'
+  return credits >= CREDITS_MAX ? 'text-danger font-bold' : 'text-success font-bold'
 }
 
 const formatMoneyDual = (usdVal) => {
@@ -263,8 +275,8 @@ const formatMoneyDual = (usdVal) => {
   return `$${formatMoney(usd)}`
 }
 
-const loadCourses = () => {
-  coursesList.value = getCourses()
+const loadCourses = async () => {
+  coursesList.value = await getCourses()
 }
 
 const scrollToCatalog = () => {
@@ -273,9 +285,9 @@ const scrollToCatalog = () => {
   el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
-  loadCourses()
+  await loadCourses()
 })
 
 const filteredCourses = computed(() => {
@@ -293,12 +305,12 @@ const openModal = (course = null) => {
     formData.value = { ...course }
   } else {
     modalTitle.value = 'Crear Nuevo Curso'
-    formData.value = { id: null, code: '', name: '', credits: '', fee: '', status: 'Active' }
+    formData.value = { id: null, code: '', name: '', credits: 3, fee: '', maxCapacity: 30, status: 'Active' }
   }
   isModalOpen.value = true
 }
 
-const saveCourse = () => {
+const saveCourse = async () => {
   if (!formRef.value.checkValidity()) {
     formRef.value.reportValidity()
     return
@@ -308,16 +320,17 @@ const saveCourse = () => {
   const data = { ...formData.value }
   data.credits = Number(data.credits)
   data.fee = Number(data.fee)
+  data.maxCapacity = Number(data.maxCapacity) || 30
 
   if (data.id) {
-    updateCourse(data.id, data)
+    await updateCourse(data.id, data)
     showToast('Curso actualizado exitosamente')
   } else {
-    addCourse(data)
+    await addCourse(data)
     showToast('Curso creado exitosamente')
   }
   
-  loadCourses()
+  await loadCourses()
   isModalOpen.value = false
 }
 
@@ -331,14 +344,14 @@ const closeDeleteModal = () => {
   pendingDeleteCourseId.value = null
 }
 
-const confirmDeleteCourse = () => {
+const confirmDeleteCourse = async () => {
   if (!pendingDeleteCourseId.value) {
     closeDeleteModal()
     return
   }
 
-  deleteCourse(pendingDeleteCourseId.value)
-  loadCourses()
+  await deleteCourse(pendingDeleteCourseId.value)
+  await loadCourses()
   showToast('Curso eliminado', 'success')
   closeDeleteModal()
 }

@@ -6,4 +6,10 @@ import { initializeData } from './js/data.js'
 // Inicializar datos mock en localStorage si no existen
 initializeData()
 
-createApp(App).mount('#app')
+const app = createApp(App)
+
+app.config.errorHandler = (err, vm, info) => {
+  console.error('Vue Error:', err, info)
+}
+
+app.mount('#app')

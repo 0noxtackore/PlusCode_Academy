@@ -1,43 +1,43 @@
-## Librerías del proyecto (completo)
+# Project Libraries (Complete)
 
-Este proyecto combina dependencias **NPM (Vite/Vue)** y recursos **vendor** servidos desde `/public/assets` (y un mirror en `/assets`).
+This project combines **NPM dependencies (Vite/Vue)** and **vendor** resources served from `/public/assets` (and a mirror in `/assets`).
 
 ---
 
-# 1) Dependencias NPM (package.json)
+# 1) NPM Dependencies (package.json)
 
-## Dependencias
+## Dependencies
 
 - **Vue 3** (`vue`)
-  - Framework principal del frontend.
+  - Main frontend framework.
 - **Chart.js** (`chart.js`)
-  - Gráficas en reportes/estadísticas.
+  - Charts in reports/statistics.
 
-## Dependencias de desarrollo
+## Dev Dependencies
 
 - **Vite** (`vite`)
   - Bundler/Dev server.
 - **@vitejs/plugin-vue**
-  - Soporte Vue SFC (`.vue`) en Vite.
+  - Support for Vue SFC (`.vue`) in Vite.
 - **vite-plugin-vue-devtools**
-  - Herramientas de dev para Vue en modo desarrollo.
+  - Vue devtools for development mode.
 
 ---
 
-# 2) Vendor / UI / Plugins (cargados desde index.html)
+# 2) Vendor / UI / Plugins (loaded from index.html)
 
-Fuente: `index.html`.
+Source: `index.html`.
 
-## Fuentes
+## Fonts
 
 - **Google Fonts – Poppins**
   - `https://fonts.googleapis.com/css2?family=Poppins...`
 
-## Iconos / UI
+## Icons / UI
 
 - **Font Awesome**
   - CSS: `/assets/font-awesome/css/all.min.css`
-  - (También existe JS en `/public/assets/font-awesome/js/all.min.js`)
+  - Also exists as JS in `/public/assets/font-awesome/js/all.min.js`
 - **IcoFont**
   - `/assets/vendor/icofont/icofont.min.css`
 - **Boxicons**
@@ -45,12 +45,12 @@ Fuente: `index.html`.
 - **Remix Icon**
   - `/assets/vendor/remixicon/remixicon.css`
 
-## Framework CSS
+## CSS Framework
 
 - **Bootstrap**
   - `/assets/vendor/bootstrap/css/bootstrap.min.css`
 
-## Animaciones / Carrusel
+## Animations / Carousel
 
 - **animate.css**
   - `/assets/vendor/animate.css/animate.min.css`
@@ -58,7 +58,7 @@ Fuente: `index.html`.
   - `/assets/vendor/owl.carousel/assets/owl.carousel.min.css`
   - JS: `/public/assets/vendor/owl.carousel/owl.carousel.min.js`
 
-## Tablas
+## Tables
 
 - **DataTables**
   - `/assets/DataTables/datatables.min.css`
@@ -81,7 +81,7 @@ Fuente: `index.html`.
   - `/assets/css/jquery-te-1.4.0.css`
   - JS: `/public/assets/js/jquery-te-1.4.0.min.js`
 
-## jQuery y utilidades
+## jQuery and Utilities
 
 - **jQuery**
   - `/public/assets/vendor/jquery/jquery.min.js`
@@ -92,31 +92,31 @@ Fuente: `index.html`.
 - **Counter-Up**
   - `/public/assets/vendor/counterup/counterup.min.js`
 
-## Validación (template vendor)
+## Validation (Template Vendor)
 
 - **php-email-form validate.js**
   - `/public/assets/vendor/php-email-form/validate.js`
 
 ---
 
-# 3) Estilos del proyecto
+# 3) Project Styles
 
-## CSS del template original
+## Original Template CSS
 
 - `/assets/css/style.css`
 
-## CSS propio Vue (src)
+## Vue Project CSS (src)
 
-- `src/css/style.css` (importado en `src/main.js`)
-- `src/css/admin-nav-override.css` (link en `index.html`)
+- `src/css/style.css` (imported in `src/main.js`)
+- `src/css/admin-nav-override.css` (link in `index.html`)
 
 ---
 
-# 4) Nota sobre duplicados (assets vs public/assets)
+# 4) Note on Duplicates (assets vs public/assets)
 
-Existe contenido vendor tanto en:
+Vendor content exists in both:
 
 - `/assets/...`
 - `/public/assets/...`
 
-En runtime, el proyecto referencia principalmente `/assets/...` desde `index.html`, mientras que varios JS vendor están disponibles en `/public/assets/...`.
+At runtime, the project mainly references `/assets/...` from `index.html`, while several vendor JS files are available in `/public/assets/...`.

@@ -4,7 +4,7 @@
  */
 
 import { getPayments } from './data.js'
-import { getExpenses, getTotalExpensesByMonth, getCashBalance } from './expenses.js'
+import { getExpenses, getCashBalance } from './expenses.js'
 import { getEnrollments } from './data.js'
 import { getCourses } from './data.js'
 import { getTeacherPayments } from './teachers.js'
@@ -12,12 +12,12 @@ import { getTeacherPayments } from './teachers.js'
 // -----------------------------------------------------------------------
 // Balance General
 // -----------------------------------------------------------------------
-export function generateBalanceSheet(date = new Date()) {
-    const payments = getPayments()
-    const expenses = getExpenses()
-    const teacherPayments = getTeacherPayments()
-    const enrollments = getEnrollments()
-    const courses = getCourses()
+export async function generateBalanceSheet(date = new Date()) {
+    const payments = await getPayments()
+    const expenses = await getExpenses()
+    const teacherPayments = await getTeacherPayments()
+    const enrollments = await getEnrollments()
+    const courses = await getCourses()
     
     // Filtrar por período (mes y año actual)
     const currentMonth = date.getMonth()
@@ -37,7 +37,7 @@ export function generateBalanceSheet(date = new Date()) {
     const totalIncome = filteredPayments.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0)
     
     // Cuentas por cobrar (matrículas pendientes)
-    const accountsReceivable = calculateAccountsReceivable()
+    const accountsReceivable = calculateAccountsReceivable(enrollments, payments, courses)
     
     // PASIVOS
     const totalExpenses = filteredExpenses.reduce((sum, expense) => sum + (Number(expense.amount) || 0), 0)
@@ -52,7 +52,8 @@ export function generateBalanceSheet(date = new Date()) {
       .reduce((sum, p) => sum + (Number(p.totalSalary) || 0), 0)
     
     // Caja/Bancos real (ingresos - egresos + nómina) acumulado
-    const cash = getCashBalance().balance
+    const cashInfo = await getCashBalance()
+    const cash = cashInfo.balance
 
     // PATRIMONIO (simplificado): caja real + CxC - pasivos - capital
     const totalAssets = cash + accountsReceivable
@@ -84,10 +85,10 @@ export function generateBalanceSheet(date = new Date()) {
 // -----------------------------------------------------------------------
 // Estado de Resultados
 // -----------------------------------------------------------------------
-export function generateIncomeStatement(startDate, endDate = new Date()) {
-    const payments = getPayments()
-    const expenses = getExpenses()
-    const teacherPayments = getTeacherPayments()
+export async function generateIncomeStatement(startDate, endDate = new Date()) {
+    const payments = await getPayments()
+    const expenses = await getExpenses()
+    const teacherPayments = await getTeacherPayments()
     
     // Filtrar por rango de fechas
     const filteredPayments = payments.filter(payment => {
@@ -119,7 +120,7 @@ export function generateIncomeStatement(startDate, endDate = new Date()) {
         if (!expensesByCategory[expense.categoryId]) {
             expensesByCategory[expense.categoryId] = 0
         }
-        expensesByCategory[expense.categoryId] += expense.amount
+        expensesByCategory[expense.categoryId] += Number(expense.amount)
     })
 
     // Incluir nómina docente como categoría virtual
@@ -132,7 +133,7 @@ export function generateIncomeStatement(startDate, endDate = new Date()) {
     return {
         period: {
             startDate: startDate,
-            endDate: endDate.toISOString().split('T')[0]
+            endDate: new Date(endDate).toISOString().split('T')[0]
         },
         revenues: {
             totalRevenue: totalRevenue,
@@ -155,19 +156,15 @@ export function generateIncomeStatement(startDate, endDate = new Date()) {
 // -----------------------------------------------------------------------
 // Funciones auxiliares
 // -----------------------------------------------------------------------
-function calculateAccountsReceivable() {
-    const enrollments = getEnrollments()
-    const payments = getPayments()
-    const courses = getCourses()
-    
+function calculateAccountsReceivable(enrollments, payments, courses) {
     let totalReceivable = 0
     
     enrollments.forEach(enrollment => {
-        const course = courses.find(c => c.id === enrollment.courseId)
+        const course = courses.find(c => c.id == enrollment.courseId)
         if (course && enrollment.status === 'Active') {
-            const enrollmentPayments = payments.filter(p => p.enrollmentId === enrollment.id)
-            const paidAmount = enrollmentPayments.reduce((sum, p) => sum + p.amount, 0)
-            const remainingBalance = course.fee - paidAmount
+            const enrollmentPayments = payments.filter(p => p.enrollmentId == enrollment.id)
+            const paidAmount = enrollmentPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+            const remainingBalance = Number(course.fee) - paidAmount
             
             if (remainingBalance > 0) {
                 totalReceivable += remainingBalance
@@ -181,9 +178,9 @@ function calculateAccountsReceivable() {
 // -----------------------------------------------------------------------
 // Reportes adicionales
 // -----------------------------------------------------------------------
-export function generateCashFlowStatement(date = new Date()) {
-    const payments = getPayments()
-    const expenses = getExpenses()
+export async function generateCashFlowStatement(date = new Date()) {
+    const payments = await getPayments()
+    const expenses = await getExpenses()
     
     const currentMonth = date.getMonth()
     const currentYear = date.getFullYear()
@@ -204,7 +201,7 @@ export function generateCashFlowStatement(date = new Date()) {
         if (!cashInByMethod[payment.method]) {
             cashInByMethod[payment.method] = 0
         }
-        cashInByMethod[payment.method] += payment.amount
+        cashInByMethod[payment.method] += Number(payment.amount)
     })
     
     // Flujo de salida por método de pago
@@ -213,7 +210,7 @@ export function generateCashFlowStatement(date = new Date()) {
         if (!cashOutByMethod[expense.paymentMethod]) {
             cashOutByMethod[expense.paymentMethod] = 0
         }
-        cashOutByMethod[expense.paymentMethod] += expense.amount
+        cashOutByMethod[expense.paymentMethod] += Number(expense.amount)
     })
     
     const totalCashIn = Object.values(cashInByMethod).reduce((sum, amount) => sum + amount, 0)
@@ -233,19 +230,19 @@ export function generateCashFlowStatement(date = new Date()) {
     }
 }
 
-export function generateProfitabilityAnalysis() {
-    const payments = getPayments()
-    const expenses = getExpenses()
-    const enrollments = getEnrollments()
-    const courses = getCourses()
+export async function generateProfitabilityAnalysis() {
+    const payments = await getPayments()
+    const expenses = await getExpenses()
+    const enrollments = await getEnrollments()
+    const courses = await getCourses()
     
     // Análisis por curso
     const courseProfitability = courses.map(course => {
-        const courseEnrollments = enrollments.filter(e => e.courseId === course.id && e.status === 'Active')
+        const courseEnrollments = enrollments.filter(e => e.courseId == course.id && e.status === 'Active')
         const enrollmentIds = courseEnrollments.map(e => e.id)
         const coursePayments = payments.filter(p => enrollmentIds.includes(p.enrollmentId))
         
-        const revenue = coursePayments.reduce((sum, p) => sum + p.amount, 0)
+        const revenue = coursePayments.reduce((sum, p) => sum + Number(p.amount), 0)
         const studentCount = courseEnrollments.length
         
         return {
@@ -277,15 +274,15 @@ export function generateProfitabilityAnalysis() {
                    expenseDate.getFullYear() === monthDate.getFullYear()
         })
         
-        const revenue = monthPayments.reduce((sum, p) => sum + p.amount, 0)
-        const expenses = monthExpenses.reduce((sum, e) => sum + e.amount, 0)
+        const revenue = monthPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+        const exps = monthExpenses.reduce((sum, e) => sum + Number(e.amount), 0)
         
         monthlyData.push({
             month: monthKey,
             revenue: revenue,
-            expenses: expenses,
-            profit: revenue - expenses,
-            profitMargin: revenue > 0 ? ((revenue - expenses) / revenue) * 100 : 0
+            expenses: exps,
+            profit: revenue - exps,
+            profitMargin: revenue > 0 ? ((revenue - exps) / revenue) * 100 : 0
         })
     }
     
@@ -293,8 +290,8 @@ export function generateProfitabilityAnalysis() {
         courseProfitability: courseProfitability.sort((a, b) => b.revenue - a.revenue),
         monthlyTrends: monthlyData,
         summary: {
-            totalRevenue: payments.reduce((sum, p) => sum + p.amount, 0),
-            totalExpenses: expenses.reduce((sum, e) => sum + e.amount, 0),
+            totalRevenue: payments.reduce((sum, p) => sum + Number(p.amount), 0),
+            totalExpenses: expenses.reduce((sum, e) => sum + Number(e.amount), 0),
             totalProfit: 0
         }
     }

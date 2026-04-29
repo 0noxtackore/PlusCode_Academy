@@ -130,8 +130,8 @@ const expensesByCategoryChartEl = ref(null)
 const revenueExpensesChart = ref(null)
 const expensesByCategoryChart = ref(null)
 
-const updateReport = () => {
-  incomeStatement.value = generateIncomeStatement(new Date(startDate.value), new Date(endDate.value))
+const updateReport = async () => {
+  incomeStatement.value = await generateIncomeStatement(new Date(startDate.value), new Date(endDate.value))
   renderCharts()
 }
 
@@ -240,8 +240,8 @@ watch(() => props.endDate, (newDate) => {
   updateReport()
 })
 
-onMounted(() => {
-  categories.value = getExpenseCategories()
-  updateReport()
+onMounted(async () => {
+  categories.value = await getExpenseCategories()
+  await updateReport()
 })
 </script>

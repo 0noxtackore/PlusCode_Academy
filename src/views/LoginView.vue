@@ -156,15 +156,14 @@ const hideNotification = () => {
   notification.value.show = false
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!username.value || !password.value) return
   
   errorMsg.value = ''
   isLoading.value = true
 
-  // Simulamos un pequeño retraso de red
-  setTimeout(() => {
-    const success = login(username.value, password.value)
+  try {
+    const success = await login(username.value, password.value)
     
     if (success) {
       showNotification('success', '¡Inicio de sesión exitoso! Redirigiendo...')
@@ -175,9 +174,11 @@ const handleLogin = () => {
     } else {
       showNotification('error', 'Campos de Usuario o Contraseña incorrectos')
     }
-    
+  } catch (err) {
+      showNotification('error', 'Error de conexión con el servidor')
+  } finally {
     isLoading.value = false
-  }, 600)
+  }
 }
 </script>
 

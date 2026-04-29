@@ -120,11 +120,11 @@
                   <span
                     v-if="student.status === 'Active'"
                     class="badge-modern"
-                    :class="getFinancialStatus(student.id).status === 'moroso' ? 'badge-pending' : 'badge-active'"
+                    :class="financialStatuses[student.id] === 'moroso' ? 'badge-pending' : 'badge-active'"
                     style="background-color: #fff;"
                   >
 
-                    {{ getFinancialStatus(student.id).status === 'moroso' ? 'Moroso' : 'Solvente' }}
+                    {{ financialStatuses[student.id] === 'moroso' ? 'Moroso' : 'Solvente' }}
 
                   </span>
 
@@ -690,25 +690,40 @@ const scrollToStudentsRegistry = () => {
 
 // Carga Inicial
 
-const loadStudents = () => {
+const financialStatuses = ref({})
 
-  studentsList.value = getStudents()
+// Carga Inicial
 
-}
+const loadStudents = async () => {
 
-const getFinancialStatus = (studentId) => {
-  try {
-    initializePaymentPlans()
-  } catch {
-    // noop
-  }
+  const [students, enrollments, courses, payments] = await Promise.all([
+    getStudents(),
+    getEnrollments(),
+    getCourses(),
+    getPayments()
+  ])
 
-  const summary = getStudentDebtSummary(Number(studentId))
-  const totalDebt = Number(summary?.totalDebt) || 0
-  return {
-    totalDebt,
-    status: totalDebt > 0 ? 'moroso' : 'solvente'
-  }
+  studentsList.value = students
+
+  const newStatuses = {}
+  students.forEach(student => {
+    const studentEnrollments = enrollments.filter(e => e.studentId == student.id)
+    let totalFee = 0
+    let totalPaid = 0
+    
+    studentEnrollments.forEach(e => {
+      const course = courses.find(c => c.id == e.courseId)
+      if (course) totalFee += Number(course.fee) || 0
+      
+      const enrollmentPayments = payments.filter(p => p.enrollmentId == e.id)
+      totalPaid += enrollmentPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+    })
+    
+    newStatuses[student.id] = (totalFee > totalPaid) ? 'moroso' : 'solvente'
+  })
+  
+  financialStatuses.value = newStatuses
+
 }
 
 
@@ -769,7 +784,7 @@ const openModal = (student = null) => {
 
 
 
-const saveStudent = () => {
+const saveStudent = async () => {
 
   // Validación básica del HTML5
 
@@ -785,13 +800,13 @@ const saveStudent = () => {
 
   if (formData.value.id) {
 
-    updateStudent(formData.value.id, formData.value)
+    await updateStudent(formData.value.id, formData.value)
 
     showToast('Estudiante actualizado correctamente')
 
   } else {
 
-    addStudent(formData.value)
+    await addStudent(formData.value)
 
     showToast('Estudiante registrado correctamente')
 
@@ -799,7 +814,7 @@ const saveStudent = () => {
 
   
 
-  loadStudents()
+  await loadStudents()
 
   isModalOpen.value = false
 
@@ -817,24 +832,27 @@ const closeDeleteModal = () => {
   pendingDeleteStudentId.value = null
 }
 
-const confirmDeleteStudent = () => {
+const confirmDeleteStudent = async () => {
   if (!pendingDeleteStudentId.value) {
     closeDeleteModal()
     return
   }
 
-  deleteStudent(pendingDeleteStudentId.value)
-  loadStudents()
+  await deleteStudent(pendingDeleteStudentId.value)
+  await loadStudents()
   showToast('Estudiante eliminado correctamente', 'success')
   closeDeleteModal()
 }
 
-const openStatementModal = (student) => {
+const openStatementModal = async (student) => {
   selectedStatementStudent.value = student
 
-  const enrollments = getEnrollments().filter(e => e.studentId === student.id)
-  const courses = getCourses()
-  const payments = getPayments()
+  const [enrollmentsRaw, courses, payments] = await Promise.all([
+    getEnrollments(),
+    getCourses(),
+    getPayments()
+  ])
+  const enrollments = enrollmentsRaw.filter(e => e.studentId == student.id)
 
   const rows = enrollments.map(e => {
     const course = courses.find(c => c.id === e.courseId) || {}
@@ -866,9 +884,9 @@ const closeStatementModal = () => {
   isStatementModalOpen.value = false
 }
 
-const printStatement = () => {
+const printStatement = async () => {
   if (!selectedStatementStudent.value) return
-  generateEnrollmentStatement(selectedStatementStudent.value.id)
+  await generateEnrollmentStatement(selectedStatementStudent.value.id)
 }
 
 </script>

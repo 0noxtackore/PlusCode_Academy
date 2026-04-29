@@ -187,7 +187,7 @@ import {
   getStudents,
   getCourses
 } from '../js/data.js'
-import { initializePaymentPlans, generatePaymentPlan, getPaymentPlans } from '../js/payment-plans.js'
+
 import { hasPermission, getCurrentUserName } from '../js/auth.js'
 import { validateEnrollment, validateCourseCapacity } from '../js/validations.js'
 import Modal from '../components/Modal.vue'
@@ -257,9 +257,12 @@ const scrollToRegistry = () => {
   el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-const loadData = () => {
-  const students = getStudents()
-  const courses = getCourses()
+const loadData = async () => {
+  const [students, courses, rawEnrollments] = await Promise.all([
+    getStudents(),
+    getCourses(),
+    getEnrollments()
+  ])
   
   // Guardamos solo los activos para los selects del modal
   activeStudents.value = students.filter(s => s.status === 'Active')
@@ -271,10 +274,9 @@ const loadData = () => {
     }))
 
   // Enriquecemos la lista de matrículas para mostrar nombres en la tabla
-  const rawEnrollments = getEnrollments()
   enrollmentsList.value = rawEnrollments.map(e => {
-    const s = students.find(xs => xs.id === e.studentId) || {}
-    const c = courses.find(xc => xc.id === e.courseId) || {}
+    const s = students.find(xs => xs.id == e.studentId) || {}
+    const c = courses.find(xc => xc.id == e.courseId) || {}
     return {
       ...e,
       studentName: s.name ? `${s.name} ${s.lastName}` : 'Unknown',
@@ -284,9 +286,9 @@ const loadData = () => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   userName.value = getCurrentUserName() || 'Administrador'
-  loadData()
+  await loadData()
 })
 
 // Computed property de búsqueda cruzada
@@ -323,7 +325,7 @@ const openModal = (enroll = null) => {
   isModalOpen.value = true
 }
 
-const saveEnrollment = () => {
+const saveEnrollment = async () => {
   if (!formRef.value.checkValidity()) {
     formRef.value.reportValidity()
     return
@@ -334,7 +336,7 @@ const saveEnrollment = () => {
   data.courseId = Number(data.courseId)
 
   // Validaciones de negocio
-  const validation = validateEnrollment(data)
+  const validation = await validateEnrollment(data)
   if (!validation.isValid) {
     alert(`Errores de Validación:\n\n${validation.errors.join('\n')}`)
     return
@@ -342,7 +344,7 @@ const saveEnrollment = () => {
 
   // Validar capacidad del curso (solo para nuevas matrículas)
   if (!data.id) {
-    const capacityValidation = validateCourseCapacity(data.courseId)
+    const capacityValidation = await validateCourseCapacity(data.courseId)
     if (!capacityValidation.isValid) {
       alert(`No se puede matricular:\n\n${capacityValidation.errors.join('\n')}\n\nMatrícula actual: ${capacityValidation.currentEnrollment}/${capacityValidation.maxCapacity}`)
       return
@@ -350,24 +352,14 @@ const saveEnrollment = () => {
   }
 
   if (data.id) {
-    updateEnrollment(data.id, data)
+    await updateEnrollment(data.id, data)
     showToast('Matrícula actualizada')
   } else {
-    const created = addEnrollment(data)
-    try {
-      initializePaymentPlans()
-      const plans = getPaymentPlans()
-      const alreadyHasPlan = plans.some(p => p.enrollmentId === created.id)
-      if (!alreadyHasPlan) {
-        generatePaymentPlan(created.id, 'default')
-      }
-    } catch (e) {
-      console.error(e)
-    }
+    await addEnrollment(data)
     showToast('Matrícula procesada completamente')
   }
   
-  loadData()
+  await loadData()
   isModalOpen.value = false
 }
 
@@ -381,14 +373,14 @@ const closeDeleteModal = () => {
   pendingDeleteEnrollmentId.value = null
 }
 
-const confirmDeleteEnrollment = () => {
+const confirmDeleteEnrollment = async () => {
   if (!pendingDeleteEnrollmentId.value) {
     closeDeleteModal()
     return
   }
 
-  deleteEnrollment(pendingDeleteEnrollmentId.value)
-  loadData()
+  await deleteEnrollment(pendingDeleteEnrollmentId.value)
+  await loadData()
   showToast('Matrícula eliminada', 'success')
   closeDeleteModal()
 }
