@@ -22,6 +22,13 @@
 import { ref, onMounted, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 import { isLoggedIn, logout } from './js/auth.js'
 
+// Modern JavaScript Features - ES6+ Classes and Utilities
+import {
+    Person, Student, isValidEmail, getUniqueValues,
+    demonstrateStringMethods, demonstrateNumberMethods, demonstrateMathMethods, demonstrateArrayMethods
+} from './js/data.js'
+import { Teacher } from './js/teachers.js'
+
 // Componentes Layout
 import Topbar from './components/Topbar.vue'
 import Downbar from './components/Downbar.vue'

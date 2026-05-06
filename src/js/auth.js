@@ -3,6 +3,8 @@
  * Maneja el login, logout y verificación de sesión.
  */
 
+'use strict';
+
 import { api } from './apiClient.js'
 
 /**

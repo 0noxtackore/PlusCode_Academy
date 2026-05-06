@@ -3,6 +3,8 @@
  * Contiene funciones asíncronas para gestionar gastos del sistema.
  */
 
+'use strict';
+
 import { api } from './apiClient.js'
 import { getPayments } from './data.js'
 

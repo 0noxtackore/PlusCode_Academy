@@ -3,7 +3,9 @@
  * Contiene todas las reglas de validación para el sistema académico
  */
 
-import { getStudents, getCourses, getEnrollments, getPayments } from './data.js'
+'use strict';
+
+import { getStudents, getCourses, getEnrollments, getPayments, isValidEmail } from './data.js'
 import { getExpenses } from './expenses.js'
 
 // -----------------------------------------------------------------------
@@ -36,9 +38,8 @@ export async function validateStudent(studentData) {
             errors.push('El correo electrónico ya existe')
         }
         
-        // Validar formato de email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(studentData.email)) {
+        // Validar formato de email usando regex moderno ES6+
+        if (!isValidEmail(studentData.email)) {
             errors.push('Formato de correo electrónico inválido')
         }
     }

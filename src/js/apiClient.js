@@ -3,6 +3,8 @@
  * Cliente para comunicarse con la API de PHP.
  */
 
+'use strict';
+
 // Configurado para el puerto 8080 de tu XAMPP
 const API_URL = 'http://localhost:8080/PlusCode_Academy-main/api/api.php';
 
